@@ -1,0 +1,29 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+flask-sqlalchemy = "*"
+flask-migrate = "*"
+werkzeug = "*"
+flasgger = "*"
+simplejson = "*"
+marshmallow = "*"
+flask-jwt-extended = "*"
+pytz = "*"
+aiomysql = "*"
+python-dotenv = "*"
+pytest = "*"
+tenacity = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"
+
+[packages.flask]
+extras = [ "async",]
+
+[packages.sqlalchemy]
+extras = [ "asyncio",]
