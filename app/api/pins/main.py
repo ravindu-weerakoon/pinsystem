@@ -39,19 +39,10 @@ async def decode_access_tokens(access_token, refresh_token):
         decode_access_token_id = decode_token(access_token)['sub']
 
     except ExpiredSignatureError:
-        # If access token is expired, try to refresh it
-        try:
-            refresh_token = request.headers.get('Authorization').split()[1]
-            decode_refresh_token_user = decode_token(refresh_token)['sub']
-            new_token = create_access_token(
-                identity=decode_refresh_token_user)
-            decode_access_token_id = decode_token(new_token)['sub']
+            # If access token is expired, 
             response = jsonify(
-                {'error': 'Access token expired, new token generated', 'access_token': new_token}), 401
+                    {'error': 'Access token expired get a new token'}), 401
             return response
-
-        except Exception as e:
-            return jsonify({'error is': str(e)}), 500
 
     except InvalidTokenError:
         return jsonify({'error': 'Invalid token Passed'}), 401
@@ -86,19 +77,10 @@ async def create_pin():
             decode_access_token_id = decode_token(access_token)['sub']
 
         except ExpiredSignatureError:
-            # If access token is expired, try to refresh it
-            try:
-                refresh_token = request.headers.get('Authorization').split()[1]
-                decode_refresh_token_user = decode_token(refresh_token)['sub']
-                new_token = create_access_token(
-                    identity=decode_refresh_token_user)
-                decode_access_token_id = decode_token(new_token)['sub']
-                response = jsonify(
-                    {'error': 'Access token expired, new token generated', 'access_token': new_token}), 401
-                return response
-
-            except Exception as e:
-                return jsonify({'error is': str(e)}), 500
+            # If access token is expired, 
+            response = jsonify(
+                    {'error': 'Access token expired get a new token'}), 401
+            return response
 
         except InvalidTokenError:
             return jsonify({'error': 'Invalid token Passed'}), 401
@@ -164,19 +146,10 @@ async def update_pin(pin_id):
             decode_access_token_id = decode_token(access_token)['sub']
 
         except ExpiredSignatureError:
-            # If access token is expired, try to refresh it
-            try:
-                refresh_token = request.headers.get('Authorization').split()[1]
-                decode_refresh_token_user = decode_token(refresh_token)['sub']
-                new_token = create_access_token(
-                    identity=decode_refresh_token_user)
-                decode_access_token_id = decode_token(new_token)['sub']
-                response = jsonify(
-                    {'error': 'Access token expired, new token generated', 'access_token': new_token}), 401
-                return response
-
-            except Exception as e:
-                return jsonify({'error is': str(e)}), 500
+            # If access token is expired, 
+            response = jsonify(
+                    {'error': 'Access token expired get a new token'}), 401
+            return response
 
         except InvalidTokenError:
             return jsonify({'error': 'Invalid token Passed'}), 401
@@ -277,19 +250,10 @@ async def delete_pin(pin_id):
             decode_access_token_id = decode_token(access_token)['sub']
 
         except ExpiredSignatureError:
-            # If access token is expired, try to refresh it
-            try:
-                refresh_token = request.headers.get('Authorization').split()[1]
-                decode_refresh_token_user = decode_token(refresh_token)['sub']
-                new_token = create_access_token(
-                    identity=decode_refresh_token_user)
-                decode_access_token_id = decode_token(new_token)['sub']
-                response = jsonify(
-                    {'error': 'Access token expired, new token generated', 'access_token': new_token}), 401
-                return response
-
-            except Exception as e:
-                return jsonify({'error is': str(e)}), 500
+            # If access token is expired, 
+            response = jsonify(
+                    {'error': 'Access token expired get a new token'}), 401
+            return response
 
         except InvalidTokenError:
             return jsonify({'error': 'Invalid token Passed'}), 401
