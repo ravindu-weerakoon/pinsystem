@@ -325,23 +325,19 @@ async def delete_pin(pin_id):
         return jsonify({'error': str(e)}), 500
 
 
-@pins_bp.route('<pin_id>', methods=['GET'])
+@pins_bp.route('', methods=['GET'])
 async def get_pins():
     try:
-        if 'pin_id' in request.args and request.args['pin_id']:
-            # Retrieve a single pin by pin_id
-            sql_query = f"SELECT * FROM pins WHERE pin_id = '{str(request.args['pin_id'])}'"
-        else:
-            # Retrieve all pins
-            sql_query = "SELECT * FROM pins ORDER BY date_posted ASC"
+        #Retrive all pins
+        sql_query = "SELECT * FROM pins ORDER BY date_posted ASC"
 
-            if 'user_id' in request.json and request.json['user_id']:
-                sql_query = f"SELECT * FROM pins WHERE user_id = '{str(request.json['user_id'])}'"
+        if 'user_id' in request.json and request.json['user_id']:
+            sql_query = f"SELECT * FROM pins WHERE user_id = '{str(request.json['user_id'])}'"
 
-            if 'order' in request.json and request.json['order']:
-                sql_query = f" SELECT * FROM pins ORDER BY date_posted DESC"
+        if 'order' in request.json and request.json['order']:
+            sql_query = f" SELECT * FROM pins ORDER BY date_posted DESC"
 
-            if 'user_id' in request.json and request.json['user_id'] and 'order' in request.json and request.json['order']:
+        if 'user_id' in request.json and request.json['user_id'] and 'order' in request.json and request.json['order']:
                 sql_query = f"SELECT * FROM pins WHERE user_id = '{str(request.json['user_id'])}' ORDER BY date_posted DESC"
 
         pool = await create_pool()
@@ -354,7 +350,6 @@ async def get_pins():
 
         pool.close()
         await pool.wait_closed()
-
         result = []
         for record in pins:
             # Create a dictionary for each record
@@ -368,25 +363,52 @@ async def get_pins():
                 "user_id": record[6]
             }
             result.append(record_dict)
-        # # paginate results
-        # page = request.args.get('page', 1, type=int)
-        # per_page = request.args.get('per_page', 10, type=int)
-        # pins_paginated = pins_query.paginate(page=page, per_page=per_page)
-
-        # prepare response
-        # pins = []
-        # for pin in pins.items:
-        #     pins.append({
-        #         'pin_id': pin.pin_id,
-        #         'title': pin.title,
-        #         'body': pin.body,
-        #         'image': pin.image,
-        #         'user_id': pin.user_id,
-        #         'date_posted': pin.date_posted,
-        #         'updated_date': pin.updated_date
-        #     })
         response = {
             'pins': result, }
+
+        # return response
+        return jsonify(response), 200
+
+        
+
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@pins_bp.route('<int:pin_id>', methods=['GET'])
+async def get_pin(pins_id):
+    try:
+        
+        # Retrieve a single pin by pin_id
+        sql_query = f"SELECT * FROM pins WHERE pin_id = '{str(request.args['pin_id'])}'"
+        
+        pool = await create_pool()
+        async with pool.acquire() as conn:
+            cur = await conn.cursor()
+            await cur.execute(sql_query)
+            pins = await cur.fetchall()
+            await cur.close()
+            conn.close()
+
+        pool.close()
+        await pool.wait_closed()
+
+        for record in pins:
+            # Create a dictionary for record
+            record_dict = {
+                "pin_id": record[0],
+                "title": record[1],
+                "body": record[2],
+                "image_url": record[3],
+                "date_posted": record[4].strftime('%Y-%m-%d %H:%M:%S'),
+                "date_updated": record[5].strftime('%Y-%m-%d %H:%M:%S'),
+                "user_id": record[6]
+            }
+        
+       
+        response = {
+            'pins': record_dict, }
 
         # return response
         return jsonify(response), 200
