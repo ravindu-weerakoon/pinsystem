@@ -10,48 +10,48 @@ pins_bp = Blueprint('pins', __name__, url_prefix='/api/pins')
 pins_bp1 = Blueprint('pins1', __name__, url_prefix='/api/pins1')
 
 
-@pins_bp1.route('', methods=['POST'])
-@jwt_required(refresh=True)
-async def create_pin1():
+# @pins_bp1.route('', methods=['POST'])
+# @jwt_required(refresh=True)
+# async def create_pin1():
 
-    # Get the access token and refresh token from the Header
-    refresh_token = request.headers.get('Authorization').split()[1]
-    access_token = request.headers.get('AccessToken').split()[1]
-    if '\"' in access_token:
-        access_token = access_token.replace('\"', '')
-    decode_token_access = decode_token(access_token)
-    decode_token_refresh = decode_token(refresh_token)
-    # Create the response with the access token and refresh token
-    response = jsonify({
-        'access_token': access_token,
-        'refresh_token': refresh_token,
-        'decode_token_access': decode_token_access,
-        'decode_token_refresh': decode_token_refresh
-    })
-    return response
+#     # Get the access token and refresh token from the Header
+#     refresh_token = request.headers.get('Authorization').split()[1]
+#     access_token = request.headers.get('AccessToken').split()[1]
+#     if '\"' in access_token:
+#         access_token = access_token.replace('\"', '')
+#     decode_token_access = decode_token(access_token)
+#     decode_token_refresh = decode_token(refresh_token)
+#     # Create the response with the access token and refresh token
+#     response = jsonify({
+#         'access_token': access_token,
+#         'refresh_token': refresh_token,
+#         'decode_token_access': decode_token_access,
+#         'decode_token_refresh': decode_token_refresh
+#     })
+#     return response
 
 
-async def decode_access_tokens(access_token, refresh_token):
-    decode_access_token_id = ''
-    if '\"' in access_token:
-        access_token = access_token.replace('\"', '')
-    try:
-        decode_access_token_id = decode_token(access_token)['sub']
+# async def decode_access_tokens(access_token, refresh_token):
+#     decode_access_token_id = ''
+#     if '\"' in access_token:
+#         access_token = access_token.replace('\"', '')
+#     try:
+#         decode_access_token_id = decode_token(access_token)['sub']
 
-    except ExpiredSignatureError:
-            # If access token is expired, 
-            response = jsonify(
-                    {'error': 'Access token expired get a new token'}), 401
-            return response
+#     except ExpiredSignatureError:
+#             # If access token is expired, 
+#             response = jsonify(
+#                     {'error': 'Access token expired get a new token'}), 401
+#             return response
 
-    except InvalidTokenError:
-        return jsonify({'error': 'Invalid token Passed'}), 401
+#     except InvalidTokenError:
+#         return jsonify({'error': 'Invalid token Passed'}), 401
 
-    return decode_access_token_id
+#     return decode_access_token_id
 
 
 @pins_bp.route('', methods=['POST'])
-@jwt_required(refresh=True)
+@jwt_required()
 async def create_pin():
     try:
         # parse request body
@@ -68,8 +68,7 @@ async def create_pin():
         # if the access token is valid then continue with the request
 
         # Get the access token and refresh token from the Header
-        refresh_token = request.headers.get('Authorization').split()[1]
-        access_token = request.headers.get('AccessToken').split()[1]
+        access_token = request.headers.get('Authorization').split()[1]
 
         if '\"' in access_token:
             access_token = access_token.replace('\"', '')
@@ -132,13 +131,12 @@ async def create_pin():
 
 
 @pins_bp.route('pins/<int:pin_id>', methods=['PUT'])
-@jwt_required(refresh=True)
+@jwt_required()
 async def update_pin(pin_id):
     try:
         updated_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         # Get the access token and refresh token from the Header
-        refresh_token = request.headers.get('Authorization').split()[1]
-        access_token = request.headers.get('AccessToken').split()[1]
+        access_token = request.headers.get('Authorization').split()[1]
 
         if '\"' in access_token:
             access_token = access_token.replace('\"', '')
@@ -237,13 +235,12 @@ async def update_pin(pin_id):
 
 
 @pins_bp.route('<int:pin_id>', methods=['DELETE'])
-@jwt_required(refresh=True)
+@jwt_required()
 async def delete_pin(pin_id):
     try:
         # Get the access token and refresh token from the Header
-        refresh_token = request.headers.get('Authorization').split()[1]
-        access_token = request.headers.get('AccessToken').split()[1]
-
+        access_token = request.headers.get('Authorization').split()[1]
+        
         if '\"' in access_token:
             access_token = access_token.replace('\"', '')
         try:
@@ -295,14 +292,15 @@ async def get_pins():
         #Retrive all pins
         sql_query = "SELECT * FROM pins ORDER BY date_posted ASC"
 
-        if 'user_id' in request.json and request.json['user_id']:
-            sql_query = f"SELECT * FROM pins WHERE user_id = '{str(request.json['user_id'])}'"
+        if 'user_id' in request.args and request.args.get('user_id'):
+            sql_query = f"SELECT * FROM pins WHERE user_id = '{str(request.args.get('user_id'))}'"
 
-        if 'order' in request.json and request.json['order']:
-            sql_query = f" SELECT * FROM pins ORDER BY date_posted DESC"
+        if 'order' in request.args and request.args.get('order'):
+            sql_query = f"SELECT * FROM pins ORDER BY date_posted DESC"
 
-        if 'user_id' in request.json and request.json['user_id'] and 'order' in request.json and request.json['order']:
-                sql_query = f"SELECT * FROM pins WHERE user_id = '{str(request.json['user_id'])}' ORDER BY date_posted DESC"
+        if 'user_id' in request.args and request.args.get('user_id') and 'order' in request.args and request.args.get('order'):
+            sql_query = f"SELECT * FROM pins WHERE user_id = '{str(request.args.get('user_id'))}' ORDER BY date_posted DESC"
+
 
         pool = await create_pool()
         async with pool.acquire() as conn:
@@ -333,19 +331,17 @@ async def get_pins():
         # return response
         return jsonify(response), 200
 
-        
-
-
     except Exception as e:
+        print(e)
         return jsonify({'error': str(e)}), 500
 
 
 @pins_bp.route('<int:pin_id>', methods=['GET'])
-async def get_pin(pins_id):
+async def get_pin(pin_id):
     try:
         
         # Retrieve a single pin by pin_id
-        sql_query = f"SELECT * FROM pins WHERE pin_id = '{str(request.args['pin_id'])}'"
+        sql_query = f"SELECT * FROM pins WHERE pin_id = '{str(pin_id)}'"
         
         pool = await create_pool()
         async with pool.acquire() as conn:
