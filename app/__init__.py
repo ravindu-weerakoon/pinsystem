@@ -6,11 +6,14 @@ from .api.auth.main import auth_bp, refresh_token_bp
 from .api.pins.main import pins_bp
 # from .api.pins.main import pins_bp1, pins_bp
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
+
 
 
 def create_app():
     app = Flask(__name__)
-
+    #Enable CORS Support
+    CORS(app)
     # register blueprints
     app.register_blueprint(register_bp)
     app.register_blueprint(auth_bp)
